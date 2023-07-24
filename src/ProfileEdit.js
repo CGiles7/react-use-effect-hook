@@ -21,15 +21,22 @@ function ProfileEdit() {
     
     
     //When this component first renders, user is an empty object, so user.id is falsy and the component displays Loading.... Eventually, the fetch() call returns and calls setUser() with the user that's returned by the API. The call to setUser() causes the component to re-render—and this time, user.id is truthy, so the user information is displayed.
+    
+    //can also use promises syntax for useEffect:
     useEffect(() => {
-      async function loadUsers() {
-        const response = await fetch(
-          "https://jsonplaceholder.typicode.com/users/1"
-        );
-        const userFromAPI = await response.json();
-        setUser(userFromAPI);
-      }
-      loadUsers();}, []); // Passing [] so that it only runs the effect once
+        fetch("https://jsonplaceholder.typicode.com/users/1")
+          .then((response) => response.json())
+          .then(setUser);
+      }, []);
+    //useEffect(() => {
+        //async function loadUsers() {
+        //const response = await fetch(
+          //"https://jsonplaceholder.typicode.com/users/1"
+        //);
+        //const userFromAPI = await response.json();
+        //setUser(userFromAPI);
+      //}
+      //loadUsers();}, []); // Passing [] so that it only runs the effect once
   
     if (user.id) {
       // `user.id` is truthy after the API call returns
