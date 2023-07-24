@@ -1,58 +1,78 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
+
+//Tip: Don't call hooks inside loops, conditions, or nested functions. Instead, always use hooks at the top level of your React function. By following this rule, you can ensure that hooks are called in the same order each time that a component renders. That's what allows React to correctly preserve the state of hooks between multiple useState() and useEffect() calls.
 function ProfileEdit() {
     const [user, setUser] = useState({});
   
-    //The following effect sets the document title after every render.
-    //useEffect(() => {
-        //document.title = `The time is now ${Date.now()}`;
-    //});
-
-    //The following effect sets the document title to a value that doesn't use any state variables or props. This effect will run exactly once.
-    //useEffect(() => {
-        //document.title = `Welcome to Thinkful!`;
-    //}, []); // Pass [] to only apply the effect once
-
-    //The following effect sets the document title to a custom message including the number of clicks. This effect will rerun only when the value of count changes. This is one way to increase performance and avoid unnecessary calls.
-    //const [count, setCount] = useState(0);
-    //useEffect(() => {
-        //document.title = `You clicked ${count} times`;
-    //}, [count]); // Only rerun the effect if `count` changes
-    
-    
-    //When this component first renders, user is an empty object, so user.id is falsy and the component displays Loading.... Eventually, the fetch() call returns and calls setUser() with the user that's returned by the API. The call to setUser() causes the component to re-render—and this time, user.id is truthy, so the user information is displayed.
-    
-    //add log() statements to determine when the various bits of code run.
-    console.log('render', user)
+    console.log("render", user);
     useEffect(() => {
-        console.log('useEffect')
-        async function loadUsers() {
+      console.log("useEffect");
+      async function loadUsers() {
         const response = await fetch(
           "https://jsonplaceholder.typicode.com/users/1"
         );
         const userFromAPI = await response.json();
-        console.log('setUser', userFromAPI)
+        console.log("setUser", userFromAPI);
         setUser(userFromAPI);
       }
-      loadUsers();}, []); // Passing [] so that it only runs the effect once
+      loadUsers();
+    }, []); // Passing [] so that it only runs the effect once
+  
+    useEffect(() => {
+      if (user.username) {
+        document.title = `${user.username} : Edit Profile`;
+      } else {
+        document.title = "Edit Profile";
+      }
+    }, [user]); // Rerun this effect when the user changes
+  
+    const changeHandler = (event) => {
+      setUser({ ...user, [event.target.name]: event.target.value });
+    };
+  
+    const submitHandler = async (event) => {
+      event.preventDefault();
+      const response = await fetch(
+        `https://jsonplaceholder.typicode.com/users/${user.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(user),
+          headers: {
+            "Content-type": "application/json;charset=UTF-8"
+          }
+        }
+      );
+      const savedData = await response.json();
+      console.log("Saved user!", savedData);
+    };
   
     if (user.id) {
-      // `user.id` is truthy after the API call returns
       return (
-        <form name="profileEdit">
+        <form name="profileEdit" onSubmit={submitHandler}>
           <div>
             <label htmlFor="username">User Name:</label>
             <input
               id="username"
               name="username"
               type="text"
+              required={true}
               value={user.username}
+              onChange={changeHandler}
             />
           </div>
           <div>
             <label htmlFor="email">Email:</label>
-            <input id="email" name="email" type="email" value={user.email} />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required={true}
+              value={user.email}
+              onChange={changeHandler}
+            />
           </div>
+          <button type="submit">Save</button>
         </form>
       );
     }
